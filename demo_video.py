@@ -21,6 +21,17 @@ def bitmap_to_mat(bitmap_seq):
         matrix.append(img)
     return np.array(matrix), shape[::-1]
 
+def jpg_to_mat(jpg_seq):
+    matrix = []
+    shape = None
+    for jpg_file in jpg_seq:
+        img = Image.open(jpg_file).convert("L")
+        if shape is None:
+            shape = img.size
+        assert img.size == shape
+        img = np.array(img.getdata())
+        matrix.append(img)
+    return np.array(matrix), shape[::-1]
 
 def do_plot(ax, img, shape):
     ax.cla()
@@ -32,8 +43,11 @@ def do_plot(ax, img, shape):
 if __name__ == "__main__":
     import sys
     import glob
+    import matplotlib
+    # Force matplotlib to not use any Xwindows backend.
+    matplotlib.use('Agg')
     import matplotlib.pyplot as pl
-
+    import Image
     if "--test" in sys.argv:
         M = (10*np.ones((10, 10))) + (-5 * np.eye(10))
         L, S, svd = pcp(M, verbose=True, svd_method="exact")
@@ -41,7 +55,8 @@ if __name__ == "__main__":
         print("passed")
         sys.exit(0)
 
-    M, shape = bitmap_to_mat(glob.glob("shoppingmall/*.bmp")[:2000:2])
+    #M, shape = bitmap_to_mat(glob.glob("/tmp2/yuchen/shoppingmall/*.bmp")[:2000:2])
+    M, shape = jpg_to_mat(glob.glob("/tmp2/yuchen/R324_20141022/*.jpg")[:280])
     print(M.shape)
     L, S, (u, s, v) = pcp(M, maxiter=50, verbose=True, svd_method="exact")
 
@@ -54,4 +69,4 @@ if __name__ == "__main__":
         axes[1].set_title("low rank")
         do_plot(axes[2], S[i], shape)
         axes[2].set_title("sparse")
-        fig.savefig("results/{0:05d}.png".format(i))
+        fig.savefig("/tmp2/yuchen/R324_20141022/decomposition/{0:05d}.png".format(i))
